@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: supk8s
+  namespace: argocd
+spec:
+  description: supK8s demo application project
+  sourceRepos:
+    - https://github.com/jmunozti/supk8s.git
+  destinations:
+    - namespace: demo
+      server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+  namespaceResourceWhitelist:
+    - group: ""
+      kind: "*"
+    - group: apps
+      kind: "*"
+    - group: rbac.authorization.k8s.io
+      kind: "*"

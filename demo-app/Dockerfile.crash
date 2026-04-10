@@ -1,0 +1,4 @@
+FROM python:3.12-slim
+RUN useradd --create-home app
+USER app
+CMD ["python", "-c", "import sys; print('FATAL: v2-broken crashed on startup'); sys.exit(1)"]

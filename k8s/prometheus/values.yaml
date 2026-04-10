@@ -1,0 +1,31 @@
+server:
+  service:
+    type: NodePort
+    nodePort: 30090
+
+alertmanager:
+  enabled: false
+
+kube-state-metrics:
+  enabled: true
+
+prometheus-node-exporter:
+  enabled: false
+
+prometheus-pushgateway:
+  enabled: false
+
+extraScrapeConfigs: |
+  - job_name: demo-app
+    kubernetes_sd_configs:
+      - role: endpoints
+        namespaces:
+          names:
+            - demo
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_service_name]
+        action: keep
+        regex: demo-app
+      - source_labels: [__meta_kubernetes_endpoint_port_name]
+        action: drop
+        regex: ""

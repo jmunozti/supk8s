@@ -1,0 +1,9 @@
+kubeconfig-kind
+kind-config.yaml
+__pycache__/
+*.pyc
+.venv/
+*.log
+.env
+.env.local
+*.secret
