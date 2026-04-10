@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/supk8s.png" alt="supK8s" width="320">
+</p>
+
 # supK8s
 
 > *"Sup, K8s?" — an AIOps agent that auto-rollbacks bad Kubernetes deployments.*
@@ -121,14 +125,28 @@ The agent uses three Prometheus signals — any one of them is enough to trigger
 | Agent | Python 3.12 (22 unit tests) |
 | LLM analysis | OpenRouter (OpenAI-compatible API, free models) |
 | Containers | Multi-stage Docker, non-root, healthchecks |
-| CI | GitHub Actions (Trivy + ruff + YAML validation) |
+| CI/CD | GitHub Actions — see [pipeline](#cicd-pipeline) |
+
+## CI/CD pipeline
+
+Every push and pull request to `main` or `develop` runs four parallel jobs in [.github/workflows/ci.yml](.github/workflows/ci.yml). Any failure blocks the merge.
+
+| Job | What it does | Why |
+|---|---|---|
+| `scan-demo-app` | Builds the demo-app image and runs **Trivy** for `CRITICAL`/`HIGH` CVEs (ignoring unfixed) | Catch vulnerable base images and Python deps before they ship |
+| `scan-agent` | Same Trivy scan against the supK8s agent image | The agent runs with cluster RBAC, so its supply chain matters |
+| `lint-agent` | Installs **ruff** and runs `ruff check agent/` | Style + dead-code + unused-import checks on the Python source |
+| `validate-manifests` | Parses every YAML in `k8s/base/` and `k8s/argocd/` with `yaml.safe_load_all` | Catches typos and broken multi-document manifests before they reach ArgoCD |
+
+The whole pipeline finishes in under a minute on a clean cache. Trivy runs with `exit-code: 0` (warnings only) so reports are visible without blocking the build, but CVEs are surfaced in the job log.
 
 ## Security
 
 - Non-root containers, multi-stage builds
 - RBAC scoped to the watched namespace only
 - OpenRouter API key delivered via Kubernetes Secret (`supk8s-llm`), loaded from a gitignored `.env`
-- Trivy CVE scan on every CI run
+- Trivy CVE scan on **both** images on every CI run (see [CI/CD pipeline](#cicd-pipeline))
+- ruff lint and YAML validation gate every merge
 
 ## License
 
